@@ -29,23 +29,26 @@ app.use((req:Request, res:Response, next:NextFunction)=> {
 
 
 //DATABASE CONFIGURATION
-const connection = mysql.createConnection({
+const pool = mysql.createPool({
+    connectionLimit : 10,
     host: config.databaseHost,
     user: config.databaseUser,
     password: config.databasePassword,
     port:config.databasePort,
     database: config.databaseName
 });
-connection.connect();
 
+pool.getConnection((err,connection)=>{
+    //ROUTES
+    //TODO SECURITY
+    app.get('/',(req,res,next) => res.json("NodeJS Prestashop Webservice API"));
+    app.get('/customer/:email',getCustomer(connection));
+    app.get('/orders',listOrders(connection));
+    app.get('/carts',listCarts(connection));
+    app.post('/neworder',newOrder(connection));
+    //TODO to be continued here !
+});
 
-//ROUTES
-app.get('/',(req,res,next) => res.json("NodeJS Prestashop Webservice API"));
-app.get('/customer/:email',getCustomer(connection));
-app.get('/orders',listOrders(connection));
-app.get('/carts',listCarts(connection));
-app.get('/neworder',newOrder(connection));
-//TODO to continue here !
 
 //START
 app.listen(config.port,()=>{

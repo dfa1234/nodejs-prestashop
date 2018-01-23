@@ -178,7 +178,7 @@ const queryInsertOrder = (connection:Connection,customer:Customer,idCart:number,
                                              '${price}',
                                              '${price}',
                                              '${price}',
-                                             '0.000000',
+                                             '${price}',
                                              '0.000000',
                                              '0.000000',
                                              '0.000000',
@@ -316,22 +316,26 @@ const queryInsertOrderDetail = (connection:Connection,customer:Customer,idCart:n
     })
 };
 
+
+
 export default (connection:Connection) => (req:Request,res:Response,next:NextFunction) => {
 
-    let email = "apoticare@apoticare.com";
-    let idProduct = 17;
-    let price = 49;
-    let name = "NEW_PRODUCT";
+    if(!req.body
+        || !req.body.email
+        || !req.body.idProduct
+        || !req.body.price
+        || !req.body.details){
+        return res.json({error:"mandatory field missing"})
+    }
 
-    queryGetCustomer(connection,email).then(
+    queryGetCustomer(connection,req.body.email).then(
         customer => {
-
             queryInsertCard(connection,customer).then(
                 resultInsertCart => {
-                    queryInsertOrder(connection,customer,resultInsertCart.insertId,price).then(
+                    queryInsertOrder(connection,customer,resultInsertCart.insertId,req.body.price).then(
                         resultInsertOrder => {
-                            queryInsertOrderDetail(connection,customer,resultInsertCart.insertId,resultInsertOrder.insertId,idProduct,name,price).then(
-                                result =>  res.json(resultInsertOrder),
+                            queryInsertOrderDetail(connection,customer,resultInsertCart.insertId,resultInsertOrder.insertId,req.body.idProduct,req.body.details,req.body.price).then(
+                                result =>  res.json({id_order:resultInsertOrder.insertId}),
                                 error => res.json(error)
                             )
                         },
