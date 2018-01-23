@@ -14,6 +14,28 @@ const createRef = (digit: number) => {
 };
 
 
+const now = ():string=>{
+
+    const checkTime = (i:number) => {
+        return (i < 10) ? "0" + i : i;
+    };
+
+    let date = new Date(),
+        yyyy = date.getFullYear().toString(),
+        mm = (date.getMonth()+1).toString(),
+        dd  = date.getDate().toString(),
+        mmChars = mm.split(''),
+        ddChars = dd.split(''),
+        DATE = yyyy + '-' + (mmChars[1]?mm:"0"+mmChars[0]) + '-' + (ddChars[1]?dd:"0"+ddChars[0]);
+
+    let h = checkTime(date.getHours()),
+        m = checkTime(date.getMinutes()),
+        s = checkTime(date.getSeconds()),
+        HOUR = h + ":" + m + ":" + s;
+
+    return DATE + " " + HOUR;
+};
+
 
 const queryInsertCard = (connection:Connection,customer:Customer) :Promise<InsertResult> => {
 
@@ -21,7 +43,8 @@ const queryInsertCard = (connection:Connection,customer:Customer) :Promise<Inser
     let id_guest = 1,
         id_address_delivery = 9,
         id_address_invoice = 9,
-        id_carrier = 15;
+        id_carrier = 15,
+        date_add = now();
 
     const mQuery = `INSERT INTO ps_cart(   id_shop_group, 
                     id_shop, 
@@ -56,7 +79,7 @@ const queryInsertCard = (connection:Connection,customer:Customer) :Promise<Inser
                     '',
                     0, 
                     0,
-                    ${(new Date()).toString()})`;
+                    ${date_add})`;
 
     return new Promise((resolve,reject)=>{
         connection.query(mQuery, (error:any, results:InsertResult, fields)=>{
