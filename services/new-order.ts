@@ -331,7 +331,7 @@ export default (connection:Connection) => (req:Request,res:Response,next:NextFun
                     queryInsertOrder(connection,customer,resultInsertCart.insertId).then(
                         resultInsertOrder => {
                             queryInsertOrderDetail(connection,customer,resultInsertCart.insertId,resultInsertOrder.insertId,idProduct,name,price).then(
-                                result =>  res.json(result),
+                                result =>  res.json(resultInsertOrder),
                                 error => res.json(error)
                             )
                         },
