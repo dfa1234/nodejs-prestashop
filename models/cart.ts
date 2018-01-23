@@ -1,0 +1,22 @@
+export type Cart = {
+    "id_cart": number,
+    "id_shop_group": number,
+    "id_shop": number,
+    "id_carrier": number,
+    "delivery_option": string,
+    "id_lang": number,
+    "id_address_delivery": number,
+    "id_address_invoice": number,
+    "id_currency": number,
+    "id_customer": number,
+    "id_guest": number,
+    "secure_key": string,
+    "recyclable": number,
+    "gift": number,
+    "gift_message": string,
+    "mobile_theme": number,
+    "allow_seperated_package": number,
+    "date_add": string,
+    "date_upd": string,
+    "checkout_session_data": string
+}

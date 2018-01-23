@@ -6,6 +6,7 @@ import {Request, Response, NextFunction} from "express";
 const logger = require('morgan');
 import newOrder from './services/new-order';
 import listOrders from './services/list-orders';
+import listCarts from './services/list-carts';
 import getCustomer from './services/get-customer';
 
 
@@ -42,8 +43,9 @@ connection.connect();
 app.get('/',(req,res,next) => res.json("NodeJS Prestashop Webservice API"));
 app.get('/customer/:email',getCustomer(connection));
 app.get('/orders',listOrders(connection));
+app.get('/carts',listCarts(connection));
 app.get('/neworder',newOrder(connection));
-
+//TODO to continue here !
 
 //START
 app.listen(config.port,()=>{
