@@ -1,0 +1,10 @@
+node_modules
+*.log
+*.txt
+*.out
+.DS_Store
+.idea
+.idea/
+*.lock
+logs/
+config.ts

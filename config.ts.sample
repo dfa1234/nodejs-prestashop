@@ -1,0 +1,14 @@
+export default {
+    databaseName: 'node_db',
+    databaseUser: 'node_user',
+    databasePassword: 'node_pass',
+    databaseHost: 'localhost',
+    databasePort: 3306,
+    port: 3000
+};
+
+
+//CREATE DATABASE node_db;
+//CREATE USER 'node_user'@'localhost' IDENTIFIED BY 'node_pass';
+//GRANT USAGE ON *.* TO 'node_user'@'localhost' IDENTIFIED BY 'node_pass';
+//GRANT ALL PRIVILEGES ON `node\_db`.* TO 'node_user'@'localhost'WITH GRANT OPTION;
