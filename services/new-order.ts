@@ -258,9 +258,7 @@ const queryInsertOrderDetail = (connection:Connection,customer:Customer,idCart:n
                          total_shipping_price_tax_excl,
                          purchase_supplier_price,
                          original_product_price,
-                         original_wholesale_price,
-                         date_add,
-                         date_upd) 
+                         original_wholesale_price) 
                 VALUES   (${idOrder},
                          0,
                          0,
@@ -305,9 +303,7 @@ const queryInsertOrderDetail = (connection:Connection,customer:Customer,idCart:n
                          '0.000000',
                          '0.000000',
                          '0.000000',
-                         '0.000000',
-                            CURRENT_TIMESTAMP,
-                            CURRENT_TIMESTAMP);`;
+                         '0.000000');`;
 
     return new Promise((resolve,reject)=>{
         connection.query(mQuery, (error:any, results:InsertResult, fields)=>{
