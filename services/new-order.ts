@@ -147,7 +147,9 @@ const queryInsertOrder = (connection:Connection,customer:Customer,idCart:number)
                                              delivery_number,
                                              invoice_date,
                                              delivery_date,
-                                             valid) 
+                                             valid,
+                                             date_add,
+                                             date_upd) 
                                   VALUES     ('${ref}',
                                              1,
                                              1,
@@ -190,7 +192,9 @@ const queryInsertOrder = (connection:Connection,customer:Customer,idCart:number)
                                              0,
                                              '0000-00-00 00:00:00',
                                              '0000-00-00 00:00:00',
-                                             0);`;
+                                             0,
+                                            CURRENT_TIMESTAMP,
+                                            CURRENT_TIMESTAMP);`;
 
     return new Promise((resolve,reject)=>{
         connection.query(mQuery, (error:any, results:InsertResult, fields)=>{
@@ -254,7 +258,9 @@ const queryInsertOrderDetail = (connection:Connection,customer:Customer,idCart:n
                          total_shipping_price_tax_excl,
                          purchase_supplier_price,
                          original_product_price,
-                         original_wholesale_price) 
+                         original_wholesale_price,
+                         date_add,
+                         date_upd) 
                 VALUES   (${idOrder},
                          0,
                          0,
@@ -299,8 +305,9 @@ const queryInsertOrderDetail = (connection:Connection,customer:Customer,idCart:n
                          '0.000000',
                          '0.000000',
                          '0.000000',
-                         '0.000000');
-                        `;
+                         '0.000000',
+                            CURRENT_TIMESTAMP,
+                            CURRENT_TIMESTAMP);`;
 
     return new Promise((resolve,reject)=>{
         connection.query(mQuery, (error:any, results:InsertResult, fields)=>{
