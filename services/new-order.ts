@@ -61,7 +61,8 @@ const queryInsertCard = (connection:Connection,customer:Customer) :Promise<Inser
                     gift_message,
                     mobile_theme,
                     allow_seperated_package,
-                    date_add) 
+                    date_add,
+                    date_upd) 
             VALUES( 1, 
                     1, 
                     ${id_carrier}, 
@@ -78,7 +79,8 @@ const queryInsertCard = (connection:Connection,customer:Customer) :Promise<Inser
                     '',
                     0, 
                     0,
-                    CURRENT_TIMESTAMP  )`;
+                    CURRENT_TIMESTAMP,
+                    CURRENT_TIMESTAMP)`;
 
     return new Promise((resolve,reject)=>{
         connection.query(mQuery, (error:any, results:InsertResult, fields)=>{
