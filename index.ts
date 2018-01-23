@@ -4,11 +4,16 @@ import config  from './config';
 import bodyParser = require("body-parser");
 import {Request, Response, NextFunction} from "express";
 const logger = require('morgan');
+const sslRootCas = require('ssl-root-cas')
 import newOrder from './services/new-order';
 import listOrders from './services/list-orders';
 import listCarts from './services/list-carts';
 import getCustomer from './services/get-customer';
 import {Connection} from "mysql";
+import * as http from 'http';
+import * as https from 'https';
+import * as fs from 'fs';
+
 
 
 //SERVER CONFIGURATION
@@ -148,6 +153,16 @@ app.post('/neworder',newOrder(connection));
 
 
 //START
-app.listen(config.port,()=>{
+http.createServer(app).listen(config.port,()=>{
     console.log('server started')
 });
+
+sslRootCas.inject();
+
+https.createServer({
+    key: fs.readFileSync('./tls/privkey.pem'),
+    cert: fs.readFileSync('./tls/fullchain.pem')
+}, app).listen(config.portSSL,()=>{
+    console.log('server ssl started')
+});
+

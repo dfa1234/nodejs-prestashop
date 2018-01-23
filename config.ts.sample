@@ -4,7 +4,8 @@ export default {
     databasePassword: 'node_pass',
     databaseHost: 'localhost',
     databasePort: 3306,
-    port: 3000
+    port: 3000,
+    portSSL: 3443
 };
 
 
