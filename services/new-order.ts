@@ -43,8 +43,7 @@ const queryInsertCard = (connection:Connection,customer:Customer) :Promise<Inser
     let id_guest = 1,
         id_address_delivery = 9,
         id_address_invoice = 9,
-        id_carrier = 15,
-        date_add = now();
+        id_carrier = 15;
 
     const mQuery = `INSERT INTO ps_cart(   id_shop_group, 
                     id_shop, 
@@ -79,7 +78,7 @@ const queryInsertCard = (connection:Connection,customer:Customer) :Promise<Inser
                     '',
                     0, 
                     0,
-                    ${date_add})`;
+                    CURRENT_TIMESTAMP  )`;
 
     return new Promise((resolve,reject)=>{
         connection.query(mQuery, (error:any, results:InsertResult, fields)=>{
