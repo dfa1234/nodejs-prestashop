@@ -95,7 +95,7 @@ const queryInsertCard = (connection:Connection,customer:Customer) :Promise<Inser
 
 
 
-const queryInsertOrder = (connection:Connection,customer:Customer,idCart:number) :Promise<InsertResult> => {
+const queryInsertOrder = (connection:Connection,customer:Customer,idCart:number,price:number) :Promise<InsertResult> => {
 
     //tmp hack
     let id_carrier = 15,
@@ -173,11 +173,11 @@ const queryInsertOrder = (connection:Connection,customer:Customer,idCart:number)
                                              '0.000000',
                                              '0.000000',
                                              '0.000000',
-                                             '0.000000',
-                                             '0.000000',
-                                             '0.000000',
-                                             '0.000000',
-                                             '0.000000',
+                                             '${price}',
+                                             '${price}',
+                                             '${price}',
+                                             '${price}',
+                                             '${price}',
                                              '0.000000',
                                              '0.000000',
                                              '0.000000',
@@ -328,7 +328,7 @@ export default (connection:Connection) => (req:Request,res:Response,next:NextFun
 
             queryInsertCard(connection,customer).then(
                 resultInsertCart => {
-                    queryInsertOrder(connection,customer,resultInsertCart.insertId).then(
+                    queryInsertOrder(connection,customer,resultInsertCart.insertId,price).then(
                         resultInsertOrder => {
                             queryInsertOrderDetail(connection,customer,resultInsertCart.insertId,resultInsertOrder.insertId,idProduct,name,price).then(
                                 result =>  res.json(resultInsertOrder),
