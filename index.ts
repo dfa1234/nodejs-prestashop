@@ -4,16 +4,14 @@ import config  from './config';
 import bodyParser = require("body-parser");
 import {Request, Response, NextFunction} from "express";
 const logger = require('morgan');
-const sslRootCas = require('ssl-root-cas')
+const sslRootCas = require('ssl-root-cas');
 import newOrder from './services/new-order';
 import listOrders from './services/list-orders';
 import listCarts from './services/list-carts';
 import getCustomer from './services/get-customer';
-import {Connection} from "mysql";
 import * as http from 'http';
 import * as https from 'https';
 import * as fs from 'fs';
-
 
 
 //SERVER CONFIGURATION
@@ -35,120 +33,27 @@ app.use((req:Request, res:Response, next:NextFunction)=> {
 
 
 //DATABASE CONFIGURATION
-/*
 const pool = mysql.createPool({
     connectionLimit : 10,
+    waitForConnections : true,
+    queueLimit :0,
     host: config.databaseHost,
     user: config.databaseUser,
     password: config.databasePassword,
     port:config.databasePort,
-    database: config.databaseName
-});
-
-pool.getConnection((err,connection)=>{
-
-});
-*/
-
-//- Establish a new connection
-const connectUri = {
-    host: config.databaseHost,
-    user: config.databaseUser,
-    password: config.databasePassword,
-    port:config.databasePort,
-    database: config.databaseName
-};
-
-let connection = mysql.createConnection(connectUri);
-
-//- Reconnection function
-const reconnect = (connection:Connection):Promise<Connection>=>{
-    return new Promise((resolve,reject)=>{
-        console.log("\n New connection tentative...");
-
-        //- Destroy the current connection variable
-        if(connection) connection.destroy();
-
-        //- Create a new one
-        let newConnection = mysql.createConnection(connectUri);
-
-        //- Try to reconnect
-        newConnection.connect((err:any)=>{
-            if(err) {
-                //- Try to connect every 2 seconds.
-                setTimeout(reconnect, 2000);
-            }else {
-                console.log("\n\t *** New connection established with the database. ***");
-                resolve(newConnection);
-            }
-        });
-    })
-
-};
-
-//- First connection
-connection.connect(function(err){
-    if(err) {
-        // mysqlErrorHandling(connection, err);
-        console.log("\n\t *** Cannot establish a connection with the database. ***");
-        reconnect(connection).then(
-            newC => connection= newC
-        );
-    }else {
-        console.log("\n\t *** New connection established with the database. ***")
-    }
-});
-
-//- Error listener
-connection.on('error', function(err) {
-
-    //- The server close the connection.
-    if(err.code === "PROTOCOL_CONNECTION_LOST"){
-        console.log("/!\\ Cannot establish a connection with the database. /!\\ ("+err.code+")");
-        reconnect(connection).then(
-            newC => connection= newC
-        );
-    }
-
-    //- Connection in closing
-    else if(err.code === "PROTOCOL_ENQUEUE_AFTER_QUIT"){
-        console.log("/!\\ Cannot establish a connection with the database. /!\\ ("+err.code+")");
-        reconnect(connection).then(
-            newC => connection= newC
-        );
-    }
-
-    //- Fatal error : connection variable must be recreated
-    else if(err.code === "PROTOCOL_ENQUEUE_AFTER_FATAL_ERROR"){
-        console.log("/!\\ Cannot establish a connection with the database. /!\\ ("+err.code+")");
-        reconnect(connection).then(
-            newC => connection= newC
-        );
-    }
-
-    //- Error because a connection is already being established
-    else if(err.code === "PROTOCOL_ENQUEUE_HANDSHAKE_TWICE"){
-        console.log("/!\\ Cannot establish a connection with the database. /!\\ ("+err.code+")");
-    }
-
-    //- Anything else
-    else{
-        console.log("/!\\ Cannot establish a connection with the database. /!\\ ("+err.code+")");
-        reconnect(connection).then(
-            newC => connection= newC
-        );
-    }
-
+    database: config.databaseName,
+    //debug    :  true,
+    connectTimeout: 10
 });
 
 
 //ROUTES
 //TODO SECURITY
 app.get('/',(req,res,next) => res.json("NodeJS Prestashop Webservice API"));
-app.get('/customer/:email',getCustomer(connection));
-app.get('/orders',listOrders(connection));
-app.get('/carts',listCarts(connection));
-app.post('/neworder',newOrder(connection));
+app.get('/customer/:email',getCustomer(pool));
+app.get('/orders',listOrders(pool));
+app.get('/carts',listCarts(pool));
+app.post('/neworder',newOrder(pool));
 //TODO to be continued here !
 
 

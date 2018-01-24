@@ -1,14 +1,13 @@
 import {NextFunction, Request, Response} from "express";
-import {Connection} from "mysql";
+import {Connection, Pool, PoolConnection} from "mysql";
 import {Customer} from "../models/customer";
 
 
-export const queryGetCustomer = (connection:Connection,email:string): Promise<Customer> =>{
+export const queryGetCustomer = (connection:Pool,email:string): Promise<Customer> =>{
     return new Promise((resolve,reject)=>{
         connection.query(`SELECT * FROM \`ps_customer\` WHERE email = '${email}'`, (error, results, fields)=>{
-            if(error){
-                return reject(error);
-            }
+            if(error) return reject(error);
+
             if(results && results.length){
                 return resolve(results[0]);
             }else{
@@ -19,8 +18,8 @@ export const queryGetCustomer = (connection:Connection,email:string): Promise<Cu
 };
 
 
-export default (connection:Connection) => (req:Request,res:Response,next:NextFunction) => {
-    queryGetCustomer(connection,req.params.email).then(
+export default (pool:Pool) => (req:Request,res:Response,next:NextFunction) => {
+    queryGetCustomer(pool,req.params.email).then(
         result => res.json(result),
         err => res.json(err)
     )

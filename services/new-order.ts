@@ -1,5 +1,5 @@
 import {NextFunction, Request, Response} from "express";
-import {Connection} from "mysql";
+import {Connection, Pool, PoolConnection} from "mysql";
 import {Customer} from "../models/customer";
 import {InsertResult} from "../models/insert-result";
 import {queryGetCustomer} from "./get-customer";
@@ -14,30 +14,8 @@ const createRef = (digit: number) => {
 };
 
 
-const now = ():string=>{
 
-    const checkTime = (i:number) => {
-        return (i < 10) ? "0" + i : i;
-    };
-
-    let date = new Date(),
-        yyyy = date.getFullYear().toString(),
-        mm = (date.getMonth()+1).toString(),
-        dd  = date.getDate().toString(),
-        mmChars = mm.split(''),
-        ddChars = dd.split(''),
-        DATE = yyyy + '-' + (mmChars[1]?mm:"0"+mmChars[0]) + '-' + (ddChars[1]?dd:"0"+ddChars[0]);
-
-    let h = checkTime(date.getHours()),
-        m = checkTime(date.getMinutes()),
-        s = checkTime(date.getSeconds()),
-        HOUR = h + ":" + m + ":" + s;
-
-    return DATE + " " + HOUR;
-};
-
-
-const queryInsertCard = (connection:Connection,customer:Customer) :Promise<InsertResult> => {
+const queryInsertCard = (connection:Pool,customer:Customer) :Promise<InsertResult> => {
 
     //hack
     let id_guest = 1,
@@ -95,7 +73,7 @@ const queryInsertCard = (connection:Connection,customer:Customer) :Promise<Inser
 
 
 
-const queryInsertOrder = (connection:Connection,customer:Customer,idCart:number,price:number) :Promise<InsertResult> => {
+const queryInsertOrder = (connection:Pool,customer:Customer,idCart:number,price:number) :Promise<InsertResult> => {
 
     //tmp hack
     let id_carrier = 15,
@@ -208,7 +186,7 @@ const queryInsertOrder = (connection:Connection,customer:Customer,idCart:number,
 };
 
 
-const queryInsertOrderDetail = (connection:Connection,customer:Customer,idCart:number,idOrder:number,idProduct:number,nameProduct:string,price:number) :Promise<InsertResult> => {
+const queryInsertOrderDetail = (connection:Pool,customer:Customer,idCart:number,idOrder:number,idProduct:number,nameProduct:string,price:number) :Promise<InsertResult> => {
 
     //tmp hack
     let product_reference = "";
@@ -317,8 +295,32 @@ const queryInsertOrderDetail = (connection:Connection,customer:Customer,idCart:n
 };
 
 
+const insertNewOrder = (connection:Pool,email:string,price:number,details:string,idProduct:number) =>{
+    return new Promise((resolve,reject)=>{
+        queryGetCustomer(connection,email).then(
+            customer => {
+                queryInsertCard(connection,customer).then(
+                    resultInsertCart => {
+                        queryInsertOrder(connection,customer,resultInsertCart.insertId,price).then(
+                            resultInsertOrder => {
+                                queryInsertOrderDetail(connection,customer,resultInsertCart.insertId,resultInsertOrder.insertId,idProduct,details,price).then(
+                                    result => resolve({id_order: resultInsertOrder.insertId}),
+                                    error => reject(error)
+                                )
+                            },
+                            error => reject(error)
+                        )
+                    },
+                    error => reject(error)
+                )
+            },
+            error => reject(error)
+        )
+    })
+};
 
-export default (connection:Connection) => (req:Request,res:Response,next:NextFunction) => {
+
+export default (pool:Pool) => (req:Request,res:Response,next:NextFunction) => {
 
     if(!req.body
         || !req.body.email
@@ -328,24 +330,12 @@ export default (connection:Connection) => (req:Request,res:Response,next:NextFun
         return res.json({error:"mandatory field missing"})
     }
 
-    queryGetCustomer(connection,req.body.email).then(
-        customer => {
-            queryInsertCard(connection,customer).then(
-                resultInsertCart => {
-                    queryInsertOrder(connection,customer,resultInsertCart.insertId,req.body.price).then(
-                        resultInsertOrder => {
-                            queryInsertOrderDetail(connection,customer,resultInsertCart.insertId,resultInsertOrder.insertId,req.body.idProduct,req.body.details,req.body.price).then(
-                                result =>  res.json({id_order:resultInsertOrder.insertId}),
-                                error => res.json(error)
-                            )
-                        },
-                        error => res.json(error)
-                    )
-                },
-                error => res.json(error)
-            )
-        },
-        error => res.json(error)
+    insertNewOrder(pool,req.body.email,req.body.price,req.body.details,req.body.idProduct).then(
+        result => {
+            return res.json(result)
+        },error => {
+            return res.json(error)
+        }
     )
 
 }
