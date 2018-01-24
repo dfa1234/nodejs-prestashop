@@ -7,6 +7,8 @@
     "ts-node": "./node_modules/.bin/ts-node index.ts",
     "install-ts": "./node_modules/.bin/pm2 install typescript",
     "start": "./node_modules/.bin/pm2 start index.ts",
+    "restart": "./node_modules/.bin/pm2 restart index",
+    "stop": "./node_modules/.bin/pm2 stop index",
     "log": "./node_modules/.bin/pm2 log index"
   },
   "dependencies": {
