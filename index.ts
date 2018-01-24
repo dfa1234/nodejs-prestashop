@@ -157,12 +157,14 @@ http.createServer(app).listen(config.port,()=>{
     console.log('server started')
 });
 
-sslRootCas.inject();
+if (fs.existsSync('./tls/privkey.pem') && fs.existsSync('./tls/fullchain.pem')) {
+    sslRootCas.inject();
+    https.createServer({
+        key: fs.readFileSync('./tls/privkey.pem'),
+        cert: fs.readFileSync('./tls/fullchain.pem')
+    }, app).listen(config.portSSL,()=>{
+        console.log('server ssl started')
+    });
+}
 
-https.createServer({
-    key: fs.readFileSync('./tls/privkey.pem'),
-    cert: fs.readFileSync('./tls/fullchain.pem')
-}, app).listen(config.portSSL,()=>{
-    console.log('server ssl started')
-});
 

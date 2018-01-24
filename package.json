@@ -4,8 +4,10 @@
   "main": "index.ts",
   "license": "MIT",
   "scripts": {
-    "start": "./node_modules/.bin/ts-node index.ts",
-    "startd": "./node_modules/.bin/nodemon -I --exec ./node_modules/.bin/ts-node index.ts"
+    "ts-node": "./node_modules/.bin/ts-node index.ts",
+    "install-ts": "./node_modules/.bin/pm2 install typescript",
+    "start": "./node_modules/.bin/pm2 start index.ts",
+    "log": "./node_modules/.bin/pm2 log index"
   },
   "dependencies": {
     "body-parser": "^1.18.2",
@@ -23,7 +25,7 @@
     "@types/mysql": "^2.15.2",
     "@types/request": "^2.0.9",
     "@types/sequelize": "^4.0.79",
-    "nodemon": "^1.14.11",
+    "pm2": "^2.9.3",
     "ts-node": "^4.0.2",
     "typescript": "^2.6.2"
   }
