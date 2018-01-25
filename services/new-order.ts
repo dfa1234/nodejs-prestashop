@@ -223,7 +223,7 @@ const queryInsertOrder = (connection:Pool,customer:Customer,idCart:number,price:
                                              '${discountedPrice}',
                                              '${discountedHT}',
                                              '${discountedPrice}',
-                                             '${discountedPrice}',
+                                             '${discountedHT}',
                                              '${discountedPrice}',
                                              '0.000000',
                                              '0.000000',
