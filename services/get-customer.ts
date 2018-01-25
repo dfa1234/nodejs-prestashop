@@ -11,7 +11,7 @@ export const queryGetCustomer = (connection:Pool,email:string): Promise<Customer
             if(results && results.length){
                 return resolve(results[0]);
             }else{
-                return reject(error);
+                return reject("customer not found");
             }
         });
     })

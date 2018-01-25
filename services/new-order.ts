@@ -5,6 +5,63 @@ import {InsertResult} from "../models/insert-result";
 import {queryGetCustomer} from "./get-customer";
 import {Cart} from "../models/cart";
 
+const ID_ADDRESS_DEFAULT = 1000;
+
+interface Patient {
+    email: string ;
+    firstName: string ;
+    lastName: string;
+}
+
+interface Ingredient{
+    id:number;
+    name:string;
+    image:string;
+    image_homme:string;
+    color:string;
+    detail:string;
+    text:string;
+    components?:number[];
+    url1:string;
+    url2:string;
+    url3:string;
+}
+
+interface Actif{
+    id: number;
+    name: string;
+    detail: string;
+    text1: string;
+    text2: string;
+}
+
+interface ResultCream {
+    base:Ingredient,
+    actifs:Ingredient[],
+    actifslist:number[],
+    account:Patient,
+    idOrder:number
+}
+
+
+enum AP_ORDER_STATUS{
+    NEW_ORDER='NEW_ORDER',
+    PROCESSING = 'PROCESSING',
+    PAID='PAID'
+}
+
+interface ApOrder {
+    "date": Date,
+    "lastname": string,
+    "firstname": string,
+    "status": AP_ORDER_STATUS,
+    "email": string,
+    "idpharma": number,
+    "id": number,
+    "data": ResultCream
+}
+
+
 const createRef = (digit: number) => {
     const possibles = "QWERTYUIOPASDFGHJKLZXCVBN";
     let text = "";
@@ -14,13 +71,24 @@ const createRef = (digit: number) => {
 };
 
 
+const queryAddress = (connection:Pool,customer:Customer) :Promise<any> => {
 
-const queryInsertCard = (connection:Pool,customer:Customer) :Promise<InsertResult> => {
+    const mQuery = `SELECT * FROM ps_address WHERE id_customer=${customer.id_customer}`;
 
-    //hack
+    return new Promise((resolve,reject)=>{
+        connection.query(mQuery, (error:any, results, fields)=>{
+            if(error || !results.length){ return resolve({});}
+            return resolve(results[0]);
+        });
+    })
+
+};
+
+
+const queryInsertCard = (connection:Pool,customer:Customer,idAddress:number) :Promise<InsertResult> => {
+
+    //tmp hack
     let id_guest = 1,
-        id_address_delivery = 9,
-        id_address_invoice = 9,
         id_carrier = 15;
 
     const mQuery = `INSERT INTO ps_cart(   id_shop_group, 
@@ -46,8 +114,8 @@ const queryInsertCard = (connection:Pool,customer:Customer) :Promise<InsertResul
                     ${id_carrier}, 
                     'a:1:{i:9;s:3:"15,";}',
                     1,
-                    ${id_address_delivery},
-                    ${id_address_invoice},
+                    ${idAddress},
+                    ${idAddress},
                     1,
                     ${customer.id_customer},
                     ${id_guest}, 
@@ -73,15 +141,15 @@ const queryInsertCard = (connection:Pool,customer:Customer) :Promise<InsertResul
 
 
 
-const queryInsertOrder = (connection:Pool,customer:Customer,idCart:number,price:number) :Promise<InsertResult> => {
+const queryInsertOrder = (connection:Pool,customer:Customer,idCart:number,price:number,discountedPrice:number,idAddress:number) :Promise<InsertResult> => {
 
     //tmp hack
     let id_carrier = 15,
-        id_address_delivery = 9,
-        id_address_invoice = 9,
-        current_state = 12;
+        current_state = 8;
 
     let ref = createRef(9);
+
+    let discountedHT = discountedPrice/1.2;
 
     const mQuery = `INSERT INTO ps_orders (reference, 
                                              id_shop_group,
@@ -136,8 +204,8 @@ const queryInsertOrder = (connection:Pool,customer:Customer,idCart:number,price:
                                              ${customer.id_customer},
                                              ${idCart},
                                              1,
-                                             ${id_address_delivery},
-                                             ${id_address_invoice},
+                                             ${idAddress},
+                                             ${idAddress},
                                              ${current_state},
                                              '${customer.secure_key}',
                                              'Payment by check',
@@ -151,12 +219,12 @@ const queryInsertOrder = (connection:Pool,customer:Customer,idCart:number,price:
                                              '0.000000',
                                              '0.000000',
                                              '0.000000',
-                                             '${price}',
-                                             '${price}',
-                                             '${price}',
-                                             '${price}',
-                                             '${price}',
-                                             '${price}',
+                                             '${discountedPrice}',
+                                             '${discountedPrice}',
+                                             '${discountedHT}',
+                                             '${discountedPrice}',
+                                             '${discountedPrice}',
+                                             '${discountedPrice}',
                                              '0.000000',
                                              '0.000000',
                                              '0.000000',
@@ -186,11 +254,12 @@ const queryInsertOrder = (connection:Pool,customer:Customer,idCart:number,price:
 };
 
 
-const queryInsertOrderDetail = (connection:Pool,customer:Customer,idCart:number,idOrder:number,idProduct:number,nameProduct:string,price:number) :Promise<InsertResult> => {
+const queryInsertOrderDetail = (connection:Pool,customer:Customer,idCart:number,idOrder:number,idProduct:number,nameProduct:string,price:number,discountedPrice:number) :Promise<InsertResult> => {
 
     //tmp hack
     let product_reference = "";
-    let product_name = nameProduct;
+
+    let discountedHT = discountedPrice/1.2;
 
     const mQuery = `INSERT INTO ps_order_detail (id_order,
                          id_order_invoice,
@@ -244,7 +313,7 @@ const queryInsertOrderDetail = (connection:Pool,customer:Customer,idCart:number,
                          ${idProduct},
                          0,
                          0,
-                         '${product_name}',
+                         '${nameProduct}',
                          1,
                          -1,
                          0,
@@ -273,15 +342,15 @@ const queryInsertOrderDetail = (connection:Pool,customer:Customer,idCart:number,
                          '',
                          0,
                          '0000-00-00 00:00:00',
-                         '${price}',
-                         '${price}',
-                         '${price}',
-                         '${price}',
+                         '${discountedPrice}',
+                         '${discountedHT}',
+                         '${discountedPrice}',
+                         '${discountedHT}',
                          '0.000000',
                          '0.000000',
                          '0.000000',
-                         '0.000000',
-                         '0.000000');`;
+                         '${price}',
+                         '${price}');`;
 
     return new Promise((resolve,reject)=>{
         connection.query(mQuery, (error:any, results:InsertResult, fields)=>{
@@ -295,28 +364,35 @@ const queryInsertOrderDetail = (connection:Pool,customer:Customer,idCart:number,
 };
 
 
-const insertNewOrder = (connection:Pool,email:string,price:number,details:string,idProduct:number) =>{
+const insertNewOrder = (connection:Pool,email:string,price:number,discountedPrice:number,details:string,idProduct:number) =>{
+
+    let mCustomer:any = null;
+    let mAddress:any = null;
+    let mCart:any = null;
+
     return new Promise((resolve,reject)=>{
-        queryGetCustomer(connection,email).then(
-            customer => {
-                queryInsertCard(connection,customer).then(
-                    resultInsertCart => {
-                        queryInsertOrder(connection,customer,resultInsertCart.insertId,price).then(
-                            resultInsertOrder => {
-                                queryInsertOrderDetail(connection,customer,resultInsertCart.insertId,resultInsertOrder.insertId,idProduct,details,price).then(
-                                    result => resolve({id_order: resultInsertOrder.insertId}),
-                                    error => reject(error)
-                                )
-                            },
-                            error => reject(error)
-                        )
-                    },
-                    error => reject(error)
-                )
-            },
-            error => reject(error)
-        )
+        queryGetCustomer(connection,email).then(customer => {
+            mCustomer = customer;
+            return queryAddress(connection,mCustomer)
+        }).then(resultAddress  =>{
+            mAddress = resultAddress;
+            if(!mAddress || !mAddress.id_address){
+                mAddress = {
+                    id_address : ID_ADDRESS_DEFAULT
+                }
+            }
+            return queryInsertCard(connection, mCustomer,mAddress.id_address)
+        }).then(resultInsertCart => {
+            mCart = resultInsertCart;
+            return queryInsertOrder(connection, mCustomer, mCart.insertId, price,discountedPrice,mAddress.id_address)
+        }).then(resultInsertOrder => {
+            return queryInsertOrderDetail(connection, mCustomer, mCart.insertId, resultInsertOrder.insertId, idProduct, details, price,discountedPrice)
+        }).then(resultInsertOrder => resolve({id_order: resultInsertOrder.insertId}))
+          .catch(error => {
+              reject({error})
+          })
     })
+
 };
 
 
@@ -326,11 +402,12 @@ export default (pool:Pool) => (req:Request,res:Response,next:NextFunction) => {
         || !req.body.email
         || !req.body.idProduct
         || !req.body.price
+        || !req.body.discountedPrice
         || !req.body.details){
         return res.json({error:"mandatory field missing"})
     }
 
-    insertNewOrder(pool,req.body.email,req.body.price,req.body.details,req.body.idProduct).then(
+    insertNewOrder(pool,req.body.email,req.body.price,req.body.discountedPrice,req.body.details,req.body.idProduct).then(
         result => {
             return res.json(result)
         },error => {
