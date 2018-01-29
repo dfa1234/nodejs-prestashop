@@ -141,13 +141,13 @@ const queryInsertCard = (connection:Pool,customer:Customer,idAddress:number) :Pr
 
 
 
-const queryInsertOrder = (connection:Pool,customer:Customer,idCart:number,price:number,discountedPrice:number,idAddress:number) :Promise<InsertResult> => {
+const queryInsertOrder = (connection:Pool,customer:Customer,idCart:number,price:number,discountedPrice:number,idAddress:number,idCommand:number) :Promise<InsertResult> => {
 
     //tmp hack
     let id_carrier = 15,
         current_state = 8;
 
-    let ref = createRef(9);
+    let ref = ""+idCommand;
 
     let discountedHT = discountedPrice/1.2;
 
@@ -364,7 +364,7 @@ const queryInsertOrderDetail = (connection:Pool,customer:Customer,idCart:number,
 };
 
 
-const insertNewOrder = (connection:Pool,email:string,price:number,discountedPrice:number,details:string,idProduct:number) =>{
+const insertNewOrder = (connection:Pool,email:string,price:number,discountedPrice:number,details:string,idProduct:number,idCommand:number) =>{
 
     let mCustomer:any = null;
     let mAddress:any = null;
@@ -384,7 +384,7 @@ const insertNewOrder = (connection:Pool,email:string,price:number,discountedPric
             return queryInsertCard(connection, mCustomer,mAddress.id_address)
         }).then(resultInsertCart => {
             mCart = resultInsertCart;
-            return queryInsertOrder(connection, mCustomer, mCart.insertId, price,discountedPrice,mAddress.id_address)
+            return queryInsertOrder(connection, mCustomer, mCart.insertId, price,discountedPrice,mAddress.id_address,idCommand)
         }).then(resultInsertOrder => {
             return queryInsertOrderDetail(connection, mCustomer, mCart.insertId, resultInsertOrder.insertId, idProduct, details, price,discountedPrice)
         }).then(resultInsertOrder => resolve({id_order: resultInsertOrder.insertId}))
@@ -399,6 +399,7 @@ const insertNewOrder = (connection:Pool,email:string,price:number,discountedPric
 export default (pool:Pool) => (req:Request,res:Response,next:NextFunction) => {
 
     if(!req.body
+        || !req.body.myId
         || !req.body.email
         || !req.body.idProduct
         || !req.body.price
@@ -407,7 +408,7 @@ export default (pool:Pool) => (req:Request,res:Response,next:NextFunction) => {
         return res.json({error:"mandatory field missing"})
     }
 
-    insertNewOrder(pool,req.body.email,req.body.price,req.body.discountedPrice,req.body.details,req.body.idProduct).then(
+    insertNewOrder(pool,req.body.email,req.body.price,req.body.discountedPrice,req.body.details,req.body.idProduct,req.body.myId).then(
         result => {
             return res.json(result)
         },error => {
