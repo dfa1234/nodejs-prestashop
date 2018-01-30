@@ -1,8 +1,9 @@
 {
   "name": "nodejs-prestashop",
-  "version": "1.0.0",
+  "version": "1.0.3",
   "main": "index.ts",
   "license": "MIT",
+  "repository":"https://github.com/dfa1234/nodejs-prestashop",
   "scripts": {
     "ts-node": "./node_modules/.bin/ts-node index.ts",
     "install-ts": "./node_modules/.bin/pm2 install typescript",
